@@ -34,8 +34,8 @@ playground.xcworkspace
 # Swift Package Manager
 #
 # Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
-# Packages/
-# Package.pins
+Packages/
+Package.pins
 .build/
 
 # .swiftpm/ is generated when editing a Swift package in Xcode 11
@@ -43,7 +43,7 @@ playground.xcworkspace
 
 # For SPM-only projects, .xcworkspace or .xcodeproj files should never be created or generated, except for use with versions earlier than Xcode 11
 # *.xcworkspace
-# *.xcodeproj
+*.xcodeproj
 
 # CocoaPods
 #
