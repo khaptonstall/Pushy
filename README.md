@@ -1,2 +1,2 @@
 # Pushy
-A command-line tool to making testing push notifications simple.
+A command-line tool to make testing push notifications simple.
