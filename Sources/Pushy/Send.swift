@@ -31,7 +31,7 @@ struct Send: ParsableCommand {
     @Option(help: "The priority of the notification. Represents the apns-priority header. For silent notifications, set to 5.")
     private var priority: Int = 10
 
-    @Option(help: "Path to the PEM-encoded private key.")
+    @Option(help: "The PEM-encoded private key, without a password, associated your APNs key in App Store Connect.")
     private var pathToCertificate: String
 
     @Option(help: "The device token from your app, as a hexadecimal-encoded ASCII string.")
