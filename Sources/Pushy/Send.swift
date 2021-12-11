@@ -46,7 +46,49 @@ struct Send: ParsableCommand {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
         process.arguments = ["-c"] + [try self.buildAPNSRequest()]
+
+        // Setup a Pipe from which we can read the APNs response.
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+
         try process.run()
+
+        // Read the APNs response and print the result to the console.
+        if #available(macOS 10.15.4, *) {
+            let outputData = try outputPipe.fileHandleForReading.readToEnd() ?? Data()
+            print(self.processAPNsResponse(outputData))
+        } else {
+            print(self.processAPNsResponse(outputPipe.fileHandleForReading.readDataToEndOfFile()))
+        }
+    }
+
+    // MARK: Response Handling
+
+    /// Processes the standard output data from a request to APNs.
+    /// - Parameter data: The data response received from an APNs request.
+    /// - Returns: A readable description about the contents of the response, indicating either a success or failure.
+    private func processAPNsResponse(_ data: Data) -> String {
+        guard !data.isEmpty else {
+            // APNs will return an empty response if the call was a success.
+            return "APNs returned a successful response!"
+        }
+
+        // If the data is not empty, convert it to a JSON object so we can find the underlying error.
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [String: Any] else {
+            return "APNs returned an error, but the API response was not valid JSON."
+        }
+
+        guard let reason = json["reason"] as? String else {
+            return "APNs returned an error, but the underlying reason was not found."
+        }
+
+        let developerDocs = "https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/handling_notification_responses_from_apns"
+        if let timestamp = json["timestamp"] as? Int {
+            // The "timestamp" key is included only when the error in the :status field is 410.
+            return "APNs returned an error: \(reason), timestamp: \(timestamp) (milliseconds since Epoch). For more details on this error code, visit \(developerDocs)"
+        } else {
+            return "APNs returned an error: \(reason). For more details on this error code, visit \(developerDocs)"
+        }
     }
 
     // MARK: Utilities
