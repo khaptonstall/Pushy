@@ -46,7 +46,21 @@ struct Send: ParsableCommand {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
         process.arguments = ["-c"] + [try self.buildAPNSRequest()]
+
+        // Setup a Pipe from which we can read the APNs response.
+        let outputPipe = Pipe()
+        process.standardOutput = outputPipe
+
         try process.run()
+
+        // Read the APNs response and print the result to the console.
+        let outputData: Data
+        if #available(macOS 10.15.4, *) {
+            outputData = try outputPipe.fileHandleForReading.readToEnd() ?? Data()
+        } else {
+            outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        }
+        print(APNSResponse(data: outputData).description)
     }
 
     // MARK: Utilities
